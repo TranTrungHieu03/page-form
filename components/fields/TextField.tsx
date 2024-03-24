@@ -1,0 +1,25 @@
+"use client"
+
+import { MdTextFields } from "react-icons/md"
+import { ElementsType, FormElement } from "../FormElements"
+const type : ElementsType = "TextField"
+export const TextFieldFormElement : FormElement= {
+    type,
+    construct: (id: string) => ({
+        id, 
+        type, 
+        extraAttributes: {
+            label: "TextField",
+            helperText: "Helper Text",
+            require: false,
+            placeHolder: "Value here ..."
+        }
+    }),
+    designerBtnElement: {
+        icon: MdTextFields,
+        label: "TextField",
+    },
+    designerComponent: () => <div>Designer Component</div>,
+    formComponent: () => <div>Form Component</div>,
+    propertiesComponent: () => <div>Properties Component</div>
+}
