@@ -145,3 +145,36 @@ export async function GetFormContentByUrl(url: string) {
         }
     })
 }
+
+export async function SubmitForm(formUrl: string, content: string) {
+    return await prisma.form.update({
+        data: {
+            submissions: {increment: 1},
+
+            FormSubmission: {
+                create: {
+                    content
+                }
+            }
+        },
+        where: {
+            shareURL: formUrl,
+            published: true
+        }
+    })
+}
+
+export async function GetFormWithSubmisions(id: number) {
+    const user = await currentUser();
+    if (!user) {
+        throw new UserNotFoundError()
+    }
+    return await prisma.form.findUnique({
+        where: {
+            id
+        },
+        include: {
+            FormSubmission: true
+        }
+    })
+}
