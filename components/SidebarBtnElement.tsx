@@ -17,7 +17,7 @@ const SidebarBtnElement = ({ formElement }: { formElement: FormElement }) => {
   return (
     <Button
       ref={draggable.setNodeRef}
-      value={"outline"}
+      variant={"outline"}
       className={cn(
         "flex flex-col gap-2 h-[120px] w-[120px] cursor-gap",
         draggable.isDragging && "ring-2 ring-primary"

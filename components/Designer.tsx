@@ -10,7 +10,7 @@ import {Button} from "./ui/button";
 import {BiSolidTrash} from "react-icons/bi";
 
 const Designer = () => {
-    const {elements, addElement, selectedElement, setSelectedElement} = useDesigner();
+    const {elements, addElement, selectedElement, setSelectedElement, removeElement} = useDesigner();
     const droppable = useDroppable({
         id: "designer-drop-area",
         data: {
@@ -24,12 +24,62 @@ const Designer = () => {
                 return;
             }
             const isDesignerBtnElement = active?.data?.current?.isDesignerBtnElement;
-            if (isDesignerBtnElement) {
+            const isDroppingOverDesignerDropArea = over?.data?.current?.isDesignDropArea
+           
+            // scenario 1
+            if (isDesignerBtnElement && isDroppingOverDesignerDropArea) {
                 const type = active.data?.current?.type;
                 const newElements = FormElements[type as ElementsType].construct(
                     idGenerator()
                 );
-                addElement(0, newElements);
+                addElement(elements.length, newElements);
+                return
+            }
+
+            const isDroppingOverDesignerElementTopHalf = over?.data?.current?.isTopHalfDesignerElement
+            const isDroppingOverDesignerElementBottomHalf = over?.data?.current?.isBottomHalfDesignerElement
+            const isDroppingOverDesignerElement = isDroppingOverDesignerElementTopHalf || isDroppingOverDesignerElementBottomHalf;
+            // scenario 2
+            if (isDesignerBtnElement && isDroppingOverDesignerElement) {
+                const type = active.data?.current?.type;
+                const newElements = FormElements[type as ElementsType].construct(
+                    idGenerator()
+                );
+                const overId = over?.data?.current?.elementId
+                const overElementIndex = elements.findIndex((el) => el.id === overId);
+                console.log(overId, overElementIndex);
+                if (overElementIndex === -1) {
+                    throw new Error(`Element not found`);
+                }
+
+                let indexForNewElement = overElementIndex
+                if (isDroppingOverDesignerElementBottomHalf) {
+                    indexForNewElement = overElementIndex + 1
+                }
+                addElement(indexForNewElement, newElements);
+                return
+            }
+
+            const isDraggingDesignerElement = active?.data?.current?.isDesignerElement;
+            // scenario 3
+            if (isDesignerBtnElement && isDraggingDesignerElement) {
+                const activeId = active?.data?.current?.elementId;
+                const overId = over?.data?.current?.elementId;
+
+                const activeElementIndex = elements.findIndex((el) => el.id === activeId);
+                const overElementIndex = elements.findIndex((el) => el.id === overId);
+
+                if (activeElementIndex === -1 || overElementIndex === -1) {
+                    throw new Error(`Element not found`);
+                }
+                const activeElement = {...elements[activeElementIndex]}
+                removeElement(activeId)
+                let indexForNewElement = overElementIndex
+                if (isDroppingOverDesignerElementBottomHalf) {
+                    indexForNewElement = overElementIndex + 1
+                }
+                addElement(indexForNewElement, activeElement);
+                return
             }
         },
     });
@@ -44,10 +94,10 @@ const Designer = () => {
                     ref={droppable.setNodeRef}
                     className={cn(
                         "bg-background max-x-[920px] h-full m-auto rounded-xl flex flex-col flex-grow items-center justify-start flex-1",
-                        droppable.isOver && "ring-2 ring-primary/20"
+                        droppable.isOver && "ring-2 ring-primary ring-inset"
                     )}
                 >
-                    {droppable.isOver && (
+                    {droppable.isOver && elements.length === 0 && (
                         <div className="p-4 w-full">
                             <div className="h-[120px] rounded-md bg-primary/20"></div>
                         </div>
@@ -58,7 +108,7 @@ const Designer = () => {
                         </p>
                     )}
                     {elements.length > 0 && (
-                        <div className="flex flex-col text-background w-full hap-2 p-4">
+                        <div className="flex flex-col text-background w-full gap-2 p-4">
                             {elements.map((element) => (
                                 <DesignerElementWrapper key={element.id} element={element}/>
                             ))}
@@ -110,7 +160,6 @@ const DesignerElementWrapper = ({
     if (draggable.isDragging) {
         return null
     }
-    console.log("SELECTED ELEMENT:", selectedElement)
     const DesignerElement = FormElements[element.type].designerComponent;
 
     return (
@@ -134,7 +183,7 @@ const DesignerElementWrapper = ({
             <div
                 ref={topHalf.setNodeRef}
                 className={cn(
-                    "absolute   w-full h-1/2 rounded-t-md",
+                    "absolute w-full top-0 h-1/2 rounded-t-md",
                 )}
             />
             <div
@@ -157,7 +206,7 @@ const DesignerElementWrapper = ({
                             <BiSolidTrash className="h-6 w-6"/>
                         </Button>
                     </div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-2 -translate-y-2 animate-pulse ">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse ">
                         <p className="text-muted-foreground text-sm">
                             Click for properties or drag to move
                         </p>
