@@ -62,7 +62,7 @@ const Designer = () => {
 
             const isDraggingDesignerElement = active?.data?.current?.isDesignerElement;
             // scenario 3
-            if (isDesignerBtnElement && isDraggingDesignerElement) {
+            if (isDroppingOverDesignerElement && isDraggingDesignerElement) {
                 const activeId = active?.data?.current?.elementId;
                 const overId = over?.data?.current?.elementId;
 
@@ -93,7 +93,7 @@ const Designer = () => {
                 <div
                     ref={droppable.setNodeRef}
                     className={cn(
-                        "bg-background max-x-[920px] h-full m-auto rounded-xl flex flex-col flex-grow items-center justify-start flex-1",
+                        "bg-background max-x-[920px] h-full m-auto rounded-xl flex flex-col flex-grow items-center justify-start flex-1 overflow-y-auto" ,
                         droppable.isOver && "ring-2 ring-primary ring-inset"
                     )}
                 >
